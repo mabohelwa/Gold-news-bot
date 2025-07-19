@@ -1,10 +1,10 @@
 import logging
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-import os
 
 logging.basicConfig(level=logging.INFO)
-TOKEN = os.getenv("TOKEN")
+
+TOKEN = "7916780567:AAEP9bZtqRjV1yZ8xwEiDANSOeu5yi3xnes"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
