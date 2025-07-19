@@ -1,2 +1,2 @@
-# Gold-news-bot
-Telegram bot for gold news and analysis
+# Gold News Bot
+Telegram bot for sending daily gold news and analysis.
