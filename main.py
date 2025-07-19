@@ -1,4 +1,3 @@
-
 import logging
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
@@ -9,11 +8,8 @@ TOKEN = os.getenv("TOKEN")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "👋 أهلاً بك في GoldWithNossaBot!
-
-"
-        "سأرسل لك الأخبار والتحليلات الذهبية هنا يوميًا.
-"
+        "👋 أهلاً بك في GoldWithNossaBot!\n\n"
+        "سأرسل لك الأخبار والتحليلات الذهبية هنا يوميًا.\n"
         "تابعني وانتظر المفاجآت 🟡✨"
     )
 
