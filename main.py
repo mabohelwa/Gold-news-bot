@@ -1,46 +1,49 @@
 import logging
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    MessageHandler,
+    ContextTypes,
+    filters
+)
 
-# إعدادات
+# ✅ إعدادات
 logging.basicConfig(level=logging.INFO)
-
 TOKEN = "توكن البوت هنا"
 PASSWORD = "Asdf@1234$1234$"
 
-# قائمة المستخدمين المسموح لهم
-AUTHORIZED_USERS = set()
-WAITING_FOR_PASSWORD = set()
+# ✅ المتغيرات
+allowed_users = set()  # لتخزين المستخدمين اللي دخلوا الباسورد
 
-# أمر البدء
+# ✅ دالة البداية
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    if user_id in AUTHORIZED_USERS:
-        await update.message.reply_text("مرحباً بك من جديد! ✅")
+    if user_id in allowed_users:
+        await update.message.reply_text("مرحباً بك من جديد 🎉")
     else:
-        WAITING_FOR_PASSWORD.add(user_id)
         await update.message.reply_text("🔐 من فضلك أدخل كلمة السر للمتابعة:")
 
-# التحقق من كلمة السر
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# ✅ التحقق من كلمة السر
+async def check_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    text = update.message.text.strip()
+    message_text = update.message.text
 
-    if user_id in WAITING_FOR_PASSWORD:
-        if text == PASSWORD:
-            AUTHORIZED_USERS.add(user_id)
-            WAITING_FOR_PASSWORD.remove(user_id)
-            await update.message.reply_text("✅ تم التحقق! أهلاً بك في البوت.")
-        else:
-            await update.message.reply_text("❌ كلمة السر غير صحيحة. حاول مرة أخرى.")
-    elif user_id in AUTHORIZED_USERS:
-        await update.message.reply_text("👋 أنت بالفعل مسجل! تابع الأخبار هنا.")
+    if user_id in allowed_users:
+        await update.message.reply_text("✅ أنت بالفعل مصرح لك بالدخول.")
+        return
+
+    if message_text == PASSWORD:
+        allowed_users.add(user_id)
+        await update.message.reply_text("✅ تم التحقق من كلمة السر! الآن يمكنك استخدام البوت.")
     else:
-        await update.message.reply_text("🔐 من فضلك ابدأ بـ /start.")
+        await update.message.reply_text("❌ كلمة السر غير صحيحة. حاول مرة أخرى.")
 
-# تشغيل التطبيق
+# ✅ تشغيل التطبيق
 if __name__ == '__main__':
     app = ApplicationBuilder().token(TOKEN).build()
+
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, check_password))
+
     app.run_polling()
