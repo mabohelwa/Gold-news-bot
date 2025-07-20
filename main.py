@@ -1,49 +1,39 @@
 import logging
+import requests
+import time
 from telegram import Update
-from telegram.ext import (
-    ApplicationBuilder,
-    CommandHandler,
-    MessageHandler,
-    ContextTypes,
-    filters
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+
+# تقدر تغير التوكن ده بتوكن البوت الجديد بتاعك
+TOKEN = "8152219074:AAEIPC-JJQuxat6UhYBWm04Y6KEO6kJb_Rs"
+
+# إعداد اللوج
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
 )
 
-# ✅ إعدادات
-logging.basicConfig(level=logging.INFO)
-TOKEN = "توكن البوت هنا"
-PASSWORD = "Asdf@1234$1234$"
+# دالة لجلب الأخبار من API (مثال)
+def get_forex_news():
+    # تقدر تبدّل الرابط ده بـ API حقيقية أو ملف ثابت
+    return "📰 Morning News:\n- Gold is rising due to geopolitical tensions.\n- USD is weak ahead of CPI data.\n- Oil prices remain stable.\n\n📊 Market Sentiment: Risk-off.\n\n#Gold #Forex #News"
 
-# ✅ المتغيرات
-allowed_users = set()  # لتخزين المستخدمين اللي دخلوا الباسورد
-
-# ✅ دالة البداية
+# أمر /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    if user_id in allowed_users:
-        await update.message.reply_text("مرحباً بك من جديد 🎉")
-    else:
-        await update.message.reply_text("🔐 من فضلك أدخل كلمة السر للمتابعة:")
+    await update.message.reply_text(
+        "👋 Welcome to Gold News Bot!\nUse /news to get the latest market news."
+    )
 
-# ✅ التحقق من كلمة السر
-async def check_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    message_text = update.message.text
+# أمر /news
+async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    news_text = get_forex_news()
+    await update.message.reply_text(news_text)
 
-    if user_id in allowed_users:
-        await update.message.reply_text("✅ أنت بالفعل مصرح لك بالدخول.")
-        return
-
-    if message_text == PASSWORD:
-        allowed_users.add(user_id)
-        await update.message.reply_text("✅ تم التحقق من كلمة السر! الآن يمكنك استخدام البوت.")
-    else:
-        await update.message.reply_text("❌ كلمة السر غير صحيحة. حاول مرة أخرى.")
-
-# ✅ تشغيل التطبيق
 if __name__ == '__main__':
     app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, check_password))
+    app.add_handler(CommandHandler("news", news))
 
+    print("✅ Bot is running...")
     app.run_polling()
