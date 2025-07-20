@@ -1,36 +1,33 @@
+
 import logging
-import requests
+import asyncio
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from news_fetcher import get_daily_news
 
-TOKEN = "8152219074:AAEIPC-JJQuxat6UhYBWm04Y6KEO6kJb_Rs"
+TOKEN = "7916780567:AAEP9bZtqRjV1yZ8xwEiDANSOeu5yi3xnes"
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
+logging.basicConfig(level=logging.INFO)
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text("Welcome! I am your Gold News Bot.")
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("👋 Welcome! I’ll send you trading news regularly.")
 
-async def news(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    try:
-        response = requests.get("https://api.nossa.news/forex/gold")
-        if response.status_code == 200:
-            data = response.json()
-            message = f"🟡 Gold News:\n\n{data.get('news', 'No news found')}"
-        else:
-            message = "Failed to fetch news from source."
-    except Exception as e:
-        message = f"Error: {str(e)}"
+async def send_news(context: ContextTypes.DEFAULT_TYPE):
+    chat_id = context.job.chat_id
+    news = get_daily_news()
+    await context.bot.send_message(chat_id=chat_id, text=news)
 
-    await update.message.reply_text(message)
+async def schedule_jobs(app):
+    # Schedule jobs for 3 AM, hourly, and important news alerts
+    from datetime import time
+    app.job_queue.run_daily(send_news, time(hour=3, minute=0))
+    app.job_queue.run_repeating(send_news, interval=3600, first=10)
 
-if __name__ == '__main__':
+async def main():
     app = ApplicationBuilder().token(TOKEN).build()
-
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("news", news))
+    await schedule_jobs(app)
+    await app.run_polling()
 
-    print("✅ Bot is running...")
-    app.run_polling()
+if __name__ == "__main__":
+    asyncio.run(main())
